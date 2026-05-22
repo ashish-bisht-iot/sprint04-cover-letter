@@ -2,8 +2,6 @@
 
 A modern SaaS utility built with **React + Vite** that generates professional cover letters using AI. Features both a smart template engine and live AI generation powered by the **Groq API (LLaMA 3.3 70B)**.
 
-> Sprint 04 · Prodesk IT Technical Team
-
 ---
 
 ## 📸 Screenshots
@@ -144,14 +142,3 @@ sprint04-cover-letter/
 
 ---
 
-## 👤 Author
-
-**Ashish Bisht**
-Sprint 04 · Prodesk IT
-[GitHub](https://github.com/ashish-bisht-iot)
-
----
-
-## 📄 License
-
-This project was built as part of an internal sprint assignment for Prodesk IT.
