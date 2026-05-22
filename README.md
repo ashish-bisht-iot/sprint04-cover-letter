@@ -15,6 +15,9 @@ A modern SaaS utility built with **React + Vite** that generates professional co
 ### AI Generated Output
 ![AI Output](screenshots/ai-output.png)
 
+### Template Output
+![Template Output](screenshots/template-output.png)
+
 ---
 
 ## ✨ Features
