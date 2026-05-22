@@ -17,6 +17,117 @@ const styles = `
     --success: #2a7a4a;
   }
 
+  .dark-mode {
+    --ink: #f0f4ff;
+    --paper: #0d1117;
+    --cream: #111620;
+    --accent: #c8502a;
+    --accent-light: #e8705040;
+    --gold: #b8962e;
+    --border: #1e2535;
+    --muted: #6b7a99;
+    --success: #3a9a6a;
+  }
+
+  .dark-mode body,
+  .dark-mode .panel,
+  .dark-mode .output-panel {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .dark-mode input,
+  .dark-mode textarea {
+    background: #0d1117;
+    color: var(--ink);
+  }
+
+  .dark-mode .mode-btn.active {
+    background: #1e2535;
+    color: var(--ink);
+  }
+
+  .theme-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--ink);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .theme-btn:hover {
+    border-color: var(--accent);
+    background: var(--cream);
+  }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
+  }
+
+  .icon-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+    opacity: 0.9;
+  }
+
+  .icon-btn:active {
+    transform: translateY(0px) scale(0.95);
+    box-shadow: none;
+  }
+
+  .btn-reset {
+    background: var(--cream);
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: transform 0.18s, box-shadow 0.18s, background 0.18s, color 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 11px 24px;
+    color: var(--muted);
+  }
+
+  .btn-reset:hover {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  }
+
+  .btn-reset:active {
+    transform: translateY(0px) scale(0.98);
+    box-shadow: none;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
   body {
     font-family: 'DM Sans', sans-serif;
     background: var(--paper);
@@ -443,6 +554,7 @@ export default function CoverLetterGenerator() {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [dark, setDark] = useState(false);
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -558,6 +670,13 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
     setError("");
   };
 
+  const handleFormReset = () => {
+    setForm({ name: "", role: "", company: "", skills: "", jd: "", tone: "professional" });
+    setOutput("");
+    setStatus("idle");
+    setError("");
+  };
+
   const isEmpty = status === "idle";
   const isGenerating = status === "generating";
   const isDone = status === "done";
@@ -566,15 +685,40 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
     <>
       <style>{FONTS}{styles}</style>
 
+      <div className={dark ? "dark-mode" : ""} style={{ background: dark ? "#0d1117" : "#f5f2ec", minHeight: "100vh" }}>
       <div className="app">
         <header className="header">
           <div className="header-left">
-            <div className="wordmark">Prodesk IT · Sprint 04</div>
+            <div className="wordmark">Prodesk IT</div>
             <h1 className="headline">
               Cover Letter<br /><em>Generator</em>
             </h1>
           </div>
-          <div className="header-badge">AI-POWERED · SaaS UTILITY</div>
+          <div className="header-actions">
+            <button
+              onClick={handleFormReset}
+              aria-label="Reset form"
+              className="icon-btn"
+              style={{ background: "var(--cream)", border: "1px solid var(--border)" }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--ink)" }}>
+                <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/>
+              </svg>
+            </button>
+            <button
+              onClick={() => setDark(d => !d)}
+              aria-label="Toggle theme"
+              className="icon-btn"
+              style={{ background: "#c8502a" }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {dark
+                  ? <><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>
+                  : <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                }
+              </svg>
+            </button>
+          </div>
         </header>
 
         <div className="layout">
@@ -602,7 +746,7 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
 
                 <div className="field">
                   <label>Your Full Name *</label>
-                  <input name="name" value={form.name} onChange={handleChange} placeholder="e.g. Priya Sharma" />
+                  <input name="name" value={form.name} onChange={handleChange} placeholder="e.g. Ashish Bisht" />
                 </div>
 
                 <div className="field">
@@ -667,6 +811,7 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
                     <>{mode === "ai" ? "✦ Generate with AI" : "◻ Use Template"}</>
                   )}
                 </button>
+                
               </div>
             </div>
           </div>
@@ -710,17 +855,13 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
                 )}
               </div>
             </div>
-
-            <div style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-              <span className="meta-tag">Phase 1 ✓ Template</span>
-              <span className="meta-tag">Phase 2 ✓ AI Integration</span>
-            </div>
           </div>
         </div>
       </div>
 
       <div className={`copy-toast ${copied ? "show" : ""}`}>
         ✓ Copied to clipboard
+      </div>
       </div>
     </>
   );

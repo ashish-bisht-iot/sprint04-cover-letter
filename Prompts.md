@@ -135,3 +135,5 @@ First time setting up a repo from scratch and making sure sensitive files are ex
 Add `.env` to `.gitignore` before running `git add .` for the first time — order matters. I confirmed after pushing by opening the repo on GitHub and manually checking that no `.env` file appeared in the file list. The `node_modules` and `dist` folders are also excluded to keep the repo clean.
 
 ---
+
+
