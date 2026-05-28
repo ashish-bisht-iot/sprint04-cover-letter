@@ -986,6 +986,8 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
                   </button>
                 </div>
 
+                {mode === "ai" && (
+                <>
                 <input
                   type="file"
                   accept="application/pdf"
@@ -1009,6 +1011,8 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
                     </button>
                   )}
                 </div>
+                </>
+                )}
 
                 <div className="field">
                   <label>Your Full Name *</label>
@@ -1069,6 +1073,7 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
                   </select>
                 </div>
 
+                {mode === "ai" && (
                 <div className="field">
                   <label>Language</label>
                   <select
@@ -1098,6 +1103,7 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
                     <option value="japanese">🇯🇵 Japanese</option>
                   </select>
                 </div>
+                )}
 
                 {error && (
                   <div className="error-box">
