@@ -1,5 +1,6 @@
-import { useState } from "react";
-
+import { useState, useRef } from "react";
+import * as pdfjsLib from "pdfjs-dist";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@5.7.284/build/pdf.worker.min.mjs";
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');`;
 
 const styles = `
@@ -162,6 +163,61 @@ const styles = `
 
   .jd-label-row label {
     margin-bottom: 0;
+  }
+
+  .resume-dropzone {
+    border: 1.5px dashed var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--paper);
+    margin-bottom: 20px;
+  }
+
+  .resume-dropzone:hover {
+    border-color: var(--accent);
+    background: var(--cream);
+  }
+
+  .resume-dropzone.loaded {
+    border-color: var(--success);
+    background: rgba(42,122,74,0.06);
+  }
+
+  .resume-icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+  }
+
+  .resume-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .resume-name {
+    font-size: 12px;
+    color: var(--success);
+    font-weight: 600;
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .resume-clear {
+    font-size: 11px;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-top: 4px;
+    font-family: 'DM Sans', sans-serif;
+    text-decoration: underline;
   }
 
   body {
@@ -592,6 +648,10 @@ export default function CoverLetterGenerator() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [resumeText, setResumeText] = useState("");
+  const [resumeName, setResumeName] = useState("");
+  const [resumeLoading, setResumeLoading] = useState(false);
+  const fileInputRef = useRef(null);
   const [dark, setDark] = useState(false);
 
   const handleChange = (e) => {
@@ -651,6 +711,7 @@ ${name || "[Your Name]"}`;
 - Job Description: ${jd}
 - Tone: ${toneMap[tone] || "professional"}
 - Language: Write the entire letter in ${form.language}. Do not use any other language.
+${resumeText ? `\nResume Content (use this to personalize the letter with specific experience and achievements):\n${resumeText.slice(0, 2000)}` : ""}
 
 Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra commentary.`;
     try {
@@ -682,6 +743,34 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
   setError(err.message || "Something went wrong. Please try again.");
   setStatus("error");
 }
+  };
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || file.type !== "application/pdf") {
+      setError("Please upload a valid PDF file.");
+      return;
+    }
+    setResumeLoading(true);
+    setError("");
+    setResumeName(file.name);
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let fullText = "";
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items.map(item => item.str).join(" ");
+        fullText += pageText + "\n";
+      }
+      setResumeText(fullText.trim());
+    } catch (err) {
+      setError("Failed to read PDF. Please try another file.");
+      setResumeName("");
+    } finally {
+      setResumeLoading(false);
+    }
   };
 
   const analyzeJD = async () => {
@@ -895,6 +984,30 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
                   >
                     ◻ Template
                   </button>
+                </div>
+
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  ref={fileInputRef}
+                  onChange={handleResumeUpload}
+                  style={{ display: "none" }}
+                />
+
+                <div
+                  className={`resume-dropzone ${resumeText ? "loaded" : ""}`}
+                  onClick={() => fileInputRef.current.click()}
+                >
+                  <div className="resume-icon">{resumeLoading ? "⏳" : resumeText ? "✅" : "📄"}</div>
+                  <div className="resume-label">
+                    {resumeLoading ? "Reading PDF..." : resumeText ? "Resume Uploaded" : "Upload Resume PDF"}
+                  </div>
+                  {resumeName && <div className="resume-name">{resumeName}</div>}
+                  {resumeText && (
+                    <button className="resume-clear" onClick={e => { e.stopPropagation(); setResumeText(""); setResumeName(""); }}>
+                      Remove
+                    </button>
+                  )}
                 </div>
 
                 <div className="field">
