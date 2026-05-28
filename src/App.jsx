@@ -128,6 +128,42 @@ const styles = `
     flex-shrink: 0;
   }
 
+  .analyze-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 3px;
+    border: 1px solid var(--blue, #3b82f6);
+    background: rgba(59,130,246,0.08);
+    color: #3b82f6;
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+
+  .analyze-btn:hover:not(:disabled) {
+    background: rgba(59,130,246,0.18);
+    transform: translateY(-1px);
+  }
+
+  .analyze-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .jd-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 7px;
+  }
+
+  .jd-label-row label {
+    margin-bottom: 0;
+  }
+
   body {
     font-family: 'DM Sans', sans-serif;
     background: var(--paper);
@@ -555,6 +591,7 @@ export default function CoverLetterGenerator() {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [dark, setDark] = useState(false);
 
   const handleChange = (e) => {
@@ -645,6 +682,44 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
   setError(err.message || "Something went wrong. Please try again.");
   setStatus("error");
 }
+  };
+
+  const analyzeJD = async () => {
+    if (!form.jd) {
+      setError("Please paste a job description first.");
+      return;
+    }
+    setAnalyzing(true);
+    setError("");
+    try {
+      const apiKey = import.meta.env.VITE_GROQ_API_KEY;
+      if (!apiKey) throw new Error("API key not found.");
+
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{
+            role: "user",
+            content: `Extract the key technical and soft skills from this job description. Return ONLY a comma-separated list of skills, nothing else. No explanation, no bullet points, just skills separated by commas.\n\nJob Description:\n${form.jd}`,
+          }],
+          max_tokens: 200,
+        }),
+      });
+
+      if (!res.ok) throw new Error(`API error ${res.status}`);
+      const data = await res.json();
+      const skills = data.choices[0].message.content.trim();
+      setForm(f => ({ ...f, skills }));
+    } catch (err) {
+      setError(err.message || "Failed to analyze JD.");
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   const handleGenerate = () => {
@@ -843,7 +918,16 @@ Write 3-4 paragraphs. Start with "Dear Hiring Manager at ${company},". No extra 
                 </div>
 
                 <div className="field">
-                  <label>Job Description / Notes</label>
+                  <div className="jd-label-row">
+                    <label>Job Description / Notes</label>
+                    <button
+                      className="analyze-btn"
+                      onClick={analyzeJD}
+                      disabled={analyzing || !form.jd}
+                    >
+                      {analyzing ? "Analyzing..." : "✦ Auto-fill Skills"}
+                    </button>
+                  </div>
                   <textarea name="jd" value={form.jd} onChange={handleChange} placeholder="Paste the job description or key requirements here…" />
                 </div>
 
